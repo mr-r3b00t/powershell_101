@@ -1,49 +1,11 @@
-<script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function filledCell(cell) {
-          return cell !== '' && cell != null;
-        }
-        function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
-
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row => row.some(filledCell));
-
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                // Fallback
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                  headerRowIndex = 0;
-                }
-
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-        }
-        </script><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PowerShell 101: Learning the Basics</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         body {
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
@@ -161,8 +123,6 @@
                         <span class="close absolute top-2 right-2 text-indigo-300 cursor-pointer text-2xl">×</span>
                         <h2 class="text-2xl font-bold text-indigo-200 mb-4">Extended Reading: Variables and Data Types</h2>
                         <p class="text-indigo-100 mb-4">PowerShell variables are declared with a $ prefix, like `$count = 42` or `$greeting = "Hello"`. PowerShell is loosely typed, so you don’t need to declare a type upfront, but you can enforce types using casts, e.g., `[int]$count = 42` or `[string]$text = "123"`. This ensures `$text` is treated as a string, not a number.</p>
-                        <p class="text-indigo-100 mb-4">Common data types include integers (`[int]`), strings (`[string]`), arrays (`$list = 1,2,3`), and hashtables (`$dict = @{Name="John"; Age=30}`). Arrays are versatile; access elements with `$list[0]` or add items with `$list += 4`. Hashtables are key-value pairs, useful for structured data, accessed like `$dict.Name`.</p>
-                        <p class="text-indigo-100">Scope is also key: variables are local by default, but you can use `global:`, `script:`, or `private:` prefixes to control scope. For example, `$global:setting = "value"` makes a variable accessible across scripts. Experiment with `$array = Get-Process | Select-Object -First 3` to store the first three processes in an array.</p>
                     </div>
                 </div>
 
@@ -179,8 +139,6 @@
                         <span class="close absolute top-2 right-2 text-indigo-300 cursor-pointer text-2xl">×</span>
                         <h2 class="text-2xl font-bold text-indigo-200 mb-4">Extended Reading: Operators</h2>
                         <p class="text-indigo-100 mb-4">PowerShell supports arithmetic operators like `+` (addition), `-` (subtraction), `*` (multiplication), `/` (division), and `%` (modulus). For example, `$result = 10 + 5 * 2` yields 20, following standard precedence. Use parentheses to control order: `(10 + 5) * 2` gives 30.</p>
-                        <p class="text-indigo-100 mb-4">Comparison operators include `-eq` (equals), `-ne` (not equals), `-gt` (greater than), `-lt` (less than), `-ge`, and `-le`. They’re case-insensitive by default; use `-ceq` for case-sensitive equality. For instance, `"hello" -eq "HELLO"` is true, but `"hello" -ceq "HELLO"` is false. String matching is also supported with `-like` (e.g., `"file.txt" -like "*.txt"`) and `-match` for regex.</p>
-                        <p class="text-indigo-100">Logical operators `-and`, `-or`, and `-not` combine conditions. Example: `if ($a -gt 5 -and $b -lt 10) { Write-Output "Valid" }`. Try this: `$processes = Get-Process | Where-Object { $_.CPU -gt 100 -and $_.Name -like "chrome*" }` to filter high-CPU Chrome processes.</p>
                     </div>
                 </div>
 
@@ -197,8 +155,6 @@
                         <span class="close absolute top-2 right-2 text-indigo-300 cursor-pointer text-2xl">×</span>
                         <h2 class="text-2xl font-bold text-indigo-200 mb-4">Extended Reading: Conditional Statements</h2>
                         <p class="text-indigo-100 mb-4">The `if` statement evaluates a condition: `if ($count -gt 10) { Write-Output "Count is high" }`. Add `elseif` for additional conditions and `else` for a default: `if ($count -gt 10) { "High" } elseif ($count -lt 5) { "Low" } else { "Medium" }`. Conditions can include any expression that evaluates to true or false.</p>
-                        <p class="text-indigo-100 mb-4">The `switch` statement is an alternative for multiple conditions, improving readability. Example: `switch ($value) { 1 {"One"} 2 {"Two"} default {"Other"} }`. It supports regex and wildcard matching, like `switch -Wildcard ($file) { "*.txt" {"Text file"} "*.exe" {"Executable"} }`.</p>
-                        <p class="text-indigo-100">Practical example: `Get-Service | ForEach-Object { if ($_.Status -eq 'Running') { Write-Output "$($_.Name) is running" } else { Write-Output "$($_.Name) is stopped" } }`. This checks the status of all services. Nesting `if` statements is possible but can reduce readability; consider `switch` for complex logic.</p>
                     </div>
                 </div>
 
@@ -231,8 +187,6 @@
                         <span class="close absolute top-2 right-2 text-indigo-300 cursor-pointer text-2xl">×</span>
                         <h2 class="text-2xl font-bold text-indigo-200 mb-4">Extended Reading: Functions</h2>
                         <p class="text-indigo-100 mb-4">Define a function with the `function` keyword: `function Get-Square ($num) { return $num * $num }`. Call it with `Get-Square 5`, which returns 25. Functions can have multiple parameters: `function Add-Numbers ($a, $b) { return $a + $b }`. Use default values for flexibility: `function Greet ($name = "User") { "Hello, $name!" }`.</p>
-                        <p class="text-indigo-100 mb-4">Functions support advanced features like parameter validation: `function Set-Age ([ValidateRange(0,120)][int]$age) { $age }` ensures `$age` is between 0 and 120. Use `[CmdletBinding()]` for cmdlet-like behavior, enabling parameters like `-Verbose` or `-ErrorAction`.</p>
-                        <p class="text-indigo-100">Practical example: `function Get-RunningServices { Get-Service | Where-Object {$_.Status -eq 'Running'} | Select-Object Name, DisplayName }`. Call it with `Get-RunningServices` to list running services. Functions can be stored in scripts or modules for reuse across projects, improving code organization and maintainability.</p>
                     </div>
                 </div>
 
@@ -249,8 +203,6 @@
                         <span class="close absolute top-2 right-2 text-indigo-300 cursor-pointer text-2xl">×</span>
                         <h2 class="text-2xl font-bold text-indigo-200 mb-4">Extended Reading: Error Handling</h2>
                         <p class="text-indigo-100 mb-4">Use `try { #code } catch { #handle error }` to manage errors. For example: `try { Get-Content "nonexistent.txt" } catch { Write-Output "File not found" }`. The `catch` block can access error details via `$_`, like `$_.Exception.Message` for the error message.</p>
-                        <p class="text-indigo-100 mb-4">PowerShell distinguishes between terminating and non-terminating errors. Cmdlets like `Get-Content` produce non-terminating errors by default, so use `-ErrorAction Stop` to make them terminating: `try { Get-Content "nonexistent.txt" -ErrorAction Stop } catch { "Error: $($_)" }`. Multiple `catch` blocks can handle specific exceptions: `catch [System.IO.FileNotFoundException] { "File missing" }`.</p>
-                        <p class="text-indigo-100">The `finally` block runs regardless of errors: `try { #code } catch { #handle } finally { Write-Output "Cleanup done" }`. Example: `try { Stop-Process -Name "notepad" -ErrorAction Stop } catch { Write-Output "Error stopping process: $($_)" } finally { Write-Output "Attempt completed" }`. This ensures robust scripts, especially for automation tasks.</p>
                     </div>
                 </div>
 
@@ -267,8 +219,6 @@
                         <span class="close absolute top-2 right-2 text-indigo-300 cursor-pointer text-2xl">×</span>
                         <h2 class="text-2xl font-bold text-indigo-200 mb-4">Extended Reading: Working with Files</h2>
                         <p class="text-indigo-100 mb-4">Use `Get-Content` to read file contents: `$text = Get-Content "file.txt"` loads the file into a variable, with each line as an array element. Write to files with `Set-Content`: `Set-Content "file.txt" "Hello, World!"` overwrites the file, while `Add-Content` appends: `Add-Content "file.txt" "New line"`. </p>
-                        <p class="text-indigo-100 mb-4">File management cmdlets include `New-Item` to create files or directories (`New-Item -Path "newfile.txt" -ItemType File`), `Remove-Item` to delete (`Remove-Item "oldfile.txt"`), and `Move-Item` to rename or move (`Move-Item "file.txt" "backup/file.txt"`). Use `Test-Path` to check existence: `if (Test-Path "file.txt") { Write-Output "File exists" }`.</p>
-                        <p class="text-indigo-100">Practical example: `Get-ChildItem *.log | ForEach-Object { $content = Get-Content $_.Name; if ($content -match "ERROR") { Write-Output "$($_.Name) contains errors" } }` scans log files for errors. For large files, use `Get-Content -ReadCount 0` to read efficiently or `-Tail 10` for the last 10 lines.</p>
                     </div>
                 </div>
 
@@ -301,8 +251,6 @@
                         <span class="close absolute top-2 right-2 text-indigo-300 cursor-pointer text-2xl">×</span>
                         <h2 class="text-2xl font-bold text-indigo-200 mb-4">Extended Reading: Modules</h2>
                         <p class="text-indigo-100 mb-4">Modules are packages of cmdlets, functions, and scripts that extend PowerShell. Use `Import-Module ActiveDirectory` to manage Active Directory objects or `Import-Module SqlServer` for SQL Server tasks. List available modules with `Get-Module -ListAvailable` and install new ones from the PowerShell Gallery: `Install-Module -Name Az -Scope CurrentUser` for Azure management.</p>
-                        <p class="text-indigo-100 mb-4">Modules can be script-based (.psm1) or binary (.dll). Create a simple module by saving functions in a `.psm1` file, like `function Get-CustomData { #code }`, and import it with `Import-Module ./MyModule.psm1`. Use `Export-ModuleMember` to specify which functions are public. Modules support versioning, ensuring compatibility: `Import-Module Az -RequiredVersion 9.0`.</p>
-                        <p class="text-indigo-100">Example: After installing `PSWindowsUpdate`, run `Get-WUList` to list Windows updates. For automation, use `Find-Module *Security* | Where-Object {$_.Author -eq "Microsoft"}` to discover Microsoft-authored security modules. Modules are essential for scaling PowerShell tasks, from system administration to cloud management.</p>
                     </div>
                 </div>
 
@@ -319,8 +267,6 @@
                         <span class="close absolute top-2 right-2 text-indigo-300 cursor-pointer text-2xl">×</span>
                         <h2 class="text-2xl font-bold text-indigo-200 mb-4">Extended Reading: Scripting Basics</h2>
                         <p class="text-indigo-100 mb-4">PowerShell scripts are saved with a `.ps1` extension and executed with `.\script.ps1`. Set the execution policy if restricted: `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned`. A basic script might look like: `# Backup Files; Get-ChildItem *.txt | Copy-Item -Destination "backup/"`.</p>
-                        <p class="text-indigo-100 mb-4">Structure scripts with comments (`#` or `<# #>` for blocks), functions, and error handling. Example: `<# Monitor Services #> function Check-Service { param($name) try { $svc = Get-Service $name -ErrorAction Stop; Write-Output "$name is $($svc.Status)" } catch { Write-Output "Error: $_" } } Check-Service "wuauserv"`. This script checks the Windows Update service status.</p>
-                        <p class="text-indigo-100">Scripts can accept parameters: `param ($Path) Get-ChildItem $Path | Out-File "filelist.txt"`. Run it with `.\script.ps1 -Path "C:\Logs"`. For scheduling, use Task Scheduler to run scripts periodically. Combine cmdlets, loops, and functions for automation, like a script to archive old logs: `Get-ChildItem *.log | Where-Object {$_.LastWriteTime -lt (Get-Date).AddDays(-30)} | Move-Item -Destination "archive/"`.</p>
                     </div>
                 </div>
 
@@ -391,7 +337,7 @@
                             <p class="font-semibold text-indigo-100">8. What is used for error handling in PowerShell?</p>
                             <label class="block text-indigo-100 rounded px-2 py-1"><input type="radio" name="q8" value="a" class="mr-2"> try-catch</label>
                             <label class="block text-indigo-100 rounded px-2 py-1"><input type="radio" name="q8" value="b" class="mr-2"> error-handle</label>
-                            <label class="block text-indigo-100 rounded px-2 py-1"><input type="radio" name="q8" value="c" class="mr-2", catch-error</label>
+                            <label class="block text-indigo-100 rounded px-2 py-1"><input type="radio" name="q8" value="c" class="mr-2"> catch-error</label>
                             <label class="block text-indigo-100 rounded px-2 py-1"><input type="radio" name="q8" value="d" class="mr-2"> handle-try</label>
                         </div>
 
@@ -458,6 +404,7 @@
         let currentSlide = 0;
         const slides = document.querySelectorAll('.slide');
         const modals = document.querySelectorAll('.modal');
+        const { jsPDF } = window.jspdf;
 
         function showSlide(index) {
             slides.forEach((slide, i) => {
@@ -509,36 +456,79 @@
         function downloadCertificate() {
             const name = localStorage.getItem('certificateName') || 'Student';
             const score = localStorage.getItem('certificateScore') || '70';
-            const certificateContent = `
-                PowerShell 101 Certificate of Completion
-                ---------------------------------------
-                Awarded to: ${name}
-                Course: PowerShell 101 - Learning the Basics
-                Score: ${score}%
-                Date: ${new Date().toLocaleDateString()}
-                ---------------------------------------
-                Congratulations on mastering the fundamentals of PowerShell!
-            `;
-            const blob = new Blob([certificateContent], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `PowerShell101_Certificate_${name}.txt`;
-            a.click();
-            URL.revokeObjectURL(url);
+            const date = new Date().toLocaleDateString();
+
+            const doc = new jsPDF({
+                orientation: 'landscape',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            // Gradient background
+            const gradient = doc.context2d.createLinearGradient(0, 0, 297, 210);
+            gradient.addColorStop(0, '#1a1a2e');
+            gradient.addColorStop(1, '#16213e');
+            doc.setFillColor(gradient);
+            doc.rect(0, 0, 297, 210, 'F');
+
+            // Border
+            doc.setDrawColor(79, 70, 229);
+            doc.setLineWidth(2);
+            doc.rect(10, 10, 277, 190, 'S');
+
+            // Title
+            doc.setFont('Helvetica', 'bold');
+            doc.setFontSize(36);
+            doc.setTextColor(99, 102, 241);
+            doc.text('Certificate of Completion', 148.5, 40, { align: 'center' });
+
+            // Course Name
+            doc.setFontSize(24);
+            doc.setTextColor(168, 85, 247);
+            doc.text('PowerShell 101: Learning the Basics', 148.5, 60, { align: 'center' });
+
+            // Awarded To
+            doc.setFontSize(18);
+            doc.setTextColor(224, 231, 255);
+            doc.text('Awarded to:', 148.5, 80, { align: 'center' });
+            doc.setFont('Helvetica', 'italic');
+            doc.setFontSize(28);
+            doc.setTextColor(255, 255, 255);
+            doc.text(name, 148.5, 100, { align: 'center' });
+
+            // Details
+            doc.setFont('Helvetica', 'normal');
+            doc.setFontSize(16);
+            doc.setTextColor(224, 231, 255);
+            doc.text(`Score: ${score}%`, 148.5, 120, { align: 'center' });
+            doc.text(`Date: ${date}`, 148.5, 135, { align: 'center' });
+
+            // Congratulatory Message
+            doc.setFontSize(14);
+            doc.setTextColor(147, 197, 253);
+            doc.text('Congratulations on mastering the fundamentals of PowerShell!', 148.5, 160, { align: 'center' });
+
+            // Decorative Lines
+            doc.setDrawColor(99, 102, 241);
+            doc.setLineWidth(0.5);
+            doc.line(50, 50, 247, 50);
+            doc.line(50, 170, 247, 170);
+
+            // Save PDF
+            doc.save(`PowerShell101_Certificate_${name}.pdf`);
         }
 
         function shareOnLinkedIn() {
             const name = localStorage.getItem('certificateName') || 'Student';
             const shareText = `I just completed the PowerShell 101 course with a score of ${localStorage.getItem('certificateScore') || '70'}%! Learned the basics of PowerShell scripting and automation. #PowerShell #Learning #Tech`;
-            const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent('https://example.com/powershell101')}&title=${encodeURIComponent('PowerShell 101 Certificate')}&summary=${encodeURIComponent(shareText)}`;
+            const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent('https://mr-r3b00t.github.io/powershell_101/')}&title=${encodeURIComponent('PowerShell 101 Certificate')}&summary=${encodeURIComponent(shareText)}`;
             window.open(linkedInUrl, '_blank');
         }
 
         function shareOnTwitter() {
             const name = localStorage.getItem('certificateName') || 'Student';
             const shareText = `Just aced PowerShell 101 with ${localStorage.getItem('certificateScore') || '70'}%! Now equipped with PowerShell scripting skills! #PowerShell #TechLearning`;
-            const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent('https://example.com/powershell101')}`;
+            const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent('https://mr-r3b00t.github.io/powershell_101/')}`;
             window.open(twitterUrl, '_blank');
         }
 
