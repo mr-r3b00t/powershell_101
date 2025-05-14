@@ -87,8 +87,6 @@
                         <span class="close absolute top-2 right-2 text-indigo-300 cursor-pointer text-2xl">×</span>
                         <h2 class="text-2xl font-bold text-indigo-200 mb-4">Extended Reading: Introduction to PowerShell</h2>
                         <p class="text-indigo-100 mb-4">PowerShell, developed by Microsoft, combines the speed of a command-line interface with the flexibility of a scripting language. Released in 2006 as Windows PowerShell, it became open-source in 2016 as PowerShell Core, extending support to Linux and macOS. Built on the .NET framework, it allows seamless interaction with Windows components like the Registry, WMI, and COM objects.</p>
-                        <p class="text-indigo-100 mb-4">Unlike traditional shells like CMD, PowerShell operates on objects, not just text, enabling richer data manipulation. For example, running `Get-Process` returns a collection of process objects with properties like Name, ID, and CPU usage, which can be filtered or sorted directly.</p>
-                        <p class="text-indigo-100">The PowerShell Gallery (powershellgallery.com) is a key resource for finding community-created scripts and modules. Try running `Install-Module -Name PSReadLine` to enhance your PowerShell console with features like syntax highlighting and auto-completion.</p>
                     </div>
                 </div>
 
@@ -105,8 +103,6 @@
                         <span class="close absolute top-2 right-2 text-indigo-300 cursor-pointer text-2xl">×</span>
                         <h2 class="text-2xl font-bold text-indigo-200 mb-4">Extended Reading: PowerShell Cmdlets</h2>
                         <p class="text-indigo-100 mb-4">Cmdlets follow a verb-noun naming convention (e.g., `Get-Process`, `Set-Location`) to ensure consistency and predictability. The verb indicates the action (e.g., Get, Set, New), and the noun specifies the target (e.g., Process, Service). This structure makes cmdlets intuitive to discover and use.</p>
-                        <p class="text-indigo-100 mb-4">Use `Get-Command` to list all available cmdlets, or filter by verb or noun, like `Get-Command -Verb Get`. For detailed help, run `Get-Help <cmdlet> -Full`, such as `Get-Help Get-Process -Full`, to see parameters, examples, and descriptions.</p>
-                        <p class="text-indigo-100">Try practical examples: `Get-Service | Where-Object {$_.Status -eq 'Running'}` lists running services, or `Stop-Process -Name notepad` terminates Notepad. Cmdlets are lightweight .NET classes, so they’re efficient and extensible, forming the backbone of PowerShell automation.</p>
                     </div>
                 </div>
 
@@ -123,7 +119,7 @@
                         <span class="close absolute top-2 right-2 text-indigo-300 cursor-pointer text-2xl">×</span>
                         <h2 class="text-2xl font-bold text-indigo-200 mb-4">Extended Reading: Variables and Data Types</h2>
                         <p class="text-indigo-100 mb-4">PowerShell variables are declared with a $ prefix, like `$count = 42` or `$greeting = "Hello"`. PowerShell is loosely typed, so you don’t need to declare a type upfront, but you can enforce types using casts, e.g., `[int]$count = 42` or `[string]$text = "123"`. This ensures `$text` is treated as a string, not a number.</p>
-                    </div>
+                </div>
                 </div>
 
                 <div class="slide hidden rounded-lg p-6" id="slide-3">
@@ -187,7 +183,7 @@
                         <span class="close absolute top-2 right-2 text-indigo-300 cursor-pointer text-2xl">×</span>
                         <h2 class="text-2xl font-bold text-indigo-200 mb-4">Extended Reading: Functions</h2>
                         <p class="text-indigo-100 mb-4">Define a function with the `function` keyword: `function Get-Square ($num) { return $num * $num }`. Call it with `Get-Square 5`, which returns 25. Functions can have multiple parameters: `function Add-Numbers ($a, $b) { return $a + $b }`. Use default values for flexibility: `function Greet ($name = "User") { "Hello, $name!" }`.</p>
-                    </div>
+                </div>
                 </div>
 
                 <div class="slide hidden rounded-lg p-6" id="slide-7">
@@ -235,7 +231,7 @@
                         <span class="close absolute top-2 right-2 text-indigo-300 cursor-pointer text-2xl">×</span>
                         <h2 class="text-2xl font-bold text-indigo-200 mb-4">Extended Reading: Piping and Redirection</h2>
                         <p class="text-indigo-100 mb-4">The pipeline (`|`) passes objects from one cmdlet to another, enabling powerful workflows. For example, `Get-Process | Where-Object { $_.CPU -gt 100 } | Sort-Object CPU -Descending` filters processes using over 100 CPU units and sorts them. Unlike text-based shells, PowerShell pipes structured objects, preserving properties for further manipulation.</p>
-                    </div>
+                </div>
                 </div>
 
                 <div class="slide hidden rounded-lg p-6" id="slide-10">
@@ -251,7 +247,7 @@
                         <span class="close absolute top-2 right-2 text-indigo-300 cursor-pointer text-2xl">×</span>
                         <h2 class="text-2xl font-bold text-indigo-200 mb-4">Extended Reading: Modules</h2>
                         <p class="text-indigo-100 mb-4">Modules are packages of cmdlets, functions, and scripts that extend PowerShell. Use `Import-Module ActiveDirectory` to manage Active Directory objects or `Import-Module SqlServer` for SQL Server tasks. List available modules with `Get-Module -ListAvailable` and install new ones from the PowerShell Gallery: `Install-Module -Name Az -Scope CurrentUser` for Azure management.</p>
-                    </div>
+                </div>
                 </div>
 
                 <div class="slide hidden rounded-lg p-6" id="slide-11">
@@ -267,7 +263,7 @@
                         <span class="close absolute top-2 right-2 text-indigo-300 cursor-pointer text-2xl">×</span>
                         <h2 class="text-2xl font-bold text-indigo-200 mb-4">Extended Reading: Scripting Basics</h2>
                         <p class="text-indigo-100 mb-4">PowerShell scripts are saved with a `.ps1` extension and executed with `.\script.ps1`. Set the execution policy if restricted: `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned`. A basic script might look like: `# Backup Files; Get-ChildItem *.txt | Copy-Item -Destination "backup/"`.</p>
-                    </div>
+                </div>
                 </div>
 
                 <div class="slide hidden rounded-lg p-6" id="slide-12">
@@ -464,11 +460,8 @@
                 format: 'a4'
             });
 
-            // Gradient background
-            const gradient = doc.context2d.createLinearGradient(0, 0, 297, 210);
-            gradient.addColorStop(0, '#1a1a2e');
-            gradient.addColorStop(1, '#16213e');
-            doc.setFillColor(gradient);
+            // Solid background
+            doc.setFillColor(26, 26, 46); // #1a1a2e
             doc.rect(0, 0, 297, 210, 'F');
 
             // Border
