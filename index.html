@@ -215,8 +215,6 @@
                         <span class="close absolute top-2 right-2 text-indigo-300 cursor-pointer text-2xl">×</span>
                         <h2 class="text-2xl font-bold text-indigo-200 mb-4">Extended Reading: Loops</h2>
                         <p class="text-indigo-100 mb-4">The `foreach` loop is ideal for arrays or collections: `foreach ($item in $array) { Write-Output $item }`. It’s commonly used with cmdlets, like `Get-Process | ForEach-Object { Write-Output $_.Name }`. The `ForEach-Object` cmdlet is similar but pipeline-friendly.</p>
-                        <p class="text-indigo-100 mb-4">The `for` loop is great for indexed iteration: `for ($i = 0; $i -lt 5; $i++) { Write-Output $i }`. The `while` loop runs as long as a condition is true: `while ($count -lt 10) { $count++; Write-Output $count }`. The `do-while` loop ensures at least one execution: `do { $count--; Write-Output $count } while ($count -gt 0)`.</p>
-                        <p class="text-indigo-100">Use `break` to exit a loop early and `continue` to skip to the next iteration. Example: `Get-ChildItem *.log | ForEach-Object { if ($_.Extension -ne ".txt") { continue } Write-Output $_.Name }` processes only text files. Loops are powerful for automation, like restarting stopped services: `Get-Service | Where-Object {$_.Status -eq 'Stopped'} | ForEach-Object { Start-Service $_.Name }`.</p>
                     </div>
                 </div>
 
@@ -287,8 +285,6 @@
                         <span class="close absolute top-2 right-2 text-indigo-300 cursor-pointer text-2xl">×</span>
                         <h2 class="text-2xl font-bold text-indigo-200 mb-4">Extended Reading: Piping and Redirection</h2>
                         <p class="text-indigo-100 mb-4">The pipeline (`|`) passes objects from one cmdlet to another, enabling powerful workflows. For example, `Get-Process | Where-Object { $_.CPU -gt 100 } | Sort-Object CPU -Descending` filters processes using over 100 CPU units and sorts them. Unlike text-based shells, PowerShell pipes structured objects, preserving properties for further manipulation.</p>
-                        <p class="text-indigo-100 mb-4">Redirection operators include `>` (overwrite file), `>>` (append to file), and `2>` (redirect errors). Example: `Get-Process > processes.txt` saves output to a file, while `Get-Content "nonexistent.txt" 2> errors.txt` redirects errors. Use `Out-File` for more control: `Get-Service | Out-File "services.txt" -Encoding utf8`.</p>
-                        <p class="text-indigo-100">Practical pipeline: `Get-ChildItem *.txt | ForEach-Object { $_.Name | Out-File "filelist.txt" -Append }` creates a list of text file names. Combine piping and redirection: `Get-Process | Where-Object {$_.WorkingSet64 -gt 100MB} | Select-Object Name, WorkingSet64 | Out-File "highmem.txt"`. This filters processes using over 100MB of memory and saves their details.</p>
                     </div>
                 </div>
 
@@ -395,7 +391,7 @@
                             <p class="font-semibold text-indigo-100">8. What is used for error handling in PowerShell?</p>
                             <label class="block text-indigo-100 rounded px-2 py-1"><input type="radio" name="q8" value="a" class="mr-2"> try-catch</label>
                             <label class="block text-indigo-100 rounded px-2 py-1"><input type="radio" name="q8" value="b" class="mr-2"> error-handle</label>
-                            <label class="block text-indigo-100 rounded px-2 py-1"><input type="radio" name="q8" value="c" class="mr-2"> catch-error</label>
+                            <label class="block text-indigo-100 rounded px-2 py-1"><input type="radio" name="q8" value="c" class="mr-2", catch-error</label>
                             <label class="block text-indigo-100 rounded px-2 py-1"><input type="radio" name="q8" value="d" class="mr-2"> handle-try</label>
                         </div>
 
@@ -451,9 +447,9 @@
             <h2 class="text-2xl font-bold text-indigo-200 mb-4">Course Complete</h2>
             <p class="text-indigo-100 mb-4">Congratulations! You have successfully completed the course.</p>
             <div class="flex space-x-4">
-                <button class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2 rounded hover:from-indigo-500 hover:to-purple-500">Download Certificate</button>
-                <button class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2 rounded hover:from-indigo-500 hover:to-purple-500">Share on LinkedIn</button>
-                <button class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2 rounded hover:from-indigo-500 hover:to-purple-500">Share on Twitter</button>
+                <button onclick="downloadCertificate()" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2 rounded hover:from-indigo-500 hover:to-purple-500">Download Certificate</button>
+                <button onclick="shareOnLinkedIn()" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2 rounded hover:from-indigo-500 hover:to-purple-500">Share on LinkedIn</button>
+                <button onclick="shareOnTwitter()" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2 rounded hover:from-indigo-500 hover:to-purple-500">Share on Twitter</button>
             </div>
         </div>
     </div>
@@ -489,6 +485,11 @@
                 q11: 'a', q12: 'b'
             };
             let score = 0;
+            const nameInput = document.getElementById('name').value.trim();
+            if (!nameInput) {
+                alert('Please enter your name before submitting.');
+                return;
+            }
             for (let i = 1; i <= 12; i++) {
                 const selected = document.querySelector(`input[name="q${i}"]:checked`);
                 if (selected && selected.value === answers[`q${i}`]) {
@@ -498,9 +499,47 @@
             const percentage = (score / 12) * 100;
             if (percentage >= 70) {
                 document.getElementById('course-complete').classList.remove('hidden');
+                localStorage.setItem('certificateName', nameInput);
+                localStorage.setItem('certificateScore', percentage.toFixed(2));
             } else {
                 alert(`Your score: ${percentage.toFixed(2)}%. A score of 70% or higher is required to pass.`);
             }
+        }
+
+        function downloadCertificate() {
+            const name = localStorage.getItem('certificateName') || 'Student';
+            const score = localStorage.getItem('certificateScore') || '70';
+            const certificateContent = `
+                PowerShell 101 Certificate of Completion
+                ---------------------------------------
+                Awarded to: ${name}
+                Course: PowerShell 101 - Learning the Basics
+                Score: ${score}%
+                Date: ${new Date().toLocaleDateString()}
+                ---------------------------------------
+                Congratulations on mastering the fundamentals of PowerShell!
+            `;
+            const blob = new Blob([certificateContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `PowerShell101_Certificate_${name}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function shareOnLinkedIn() {
+            const name = localStorage.getItem('certificateName') || 'Student';
+            const shareText = `I just completed the PowerShell 101 course with a score of ${localStorage.getItem('certificateScore') || '70'}%! Learned the basics of PowerShell scripting and automation. #PowerShell #Learning #Tech`;
+            const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent('https://example.com/powershell101')}&title=${encodeURIComponent('PowerShell 101 Certificate')}&summary=${encodeURIComponent(shareText)}`;
+            window.open(linkedInUrl, '_blank');
+        }
+
+        function shareOnTwitter() {
+            const name = localStorage.getItem('certificateName') || 'Student';
+            const shareText = `Just aced PowerShell 101 with ${localStorage.getItem('certificateScore') || '70'}%! Now equipped with PowerShell scripting skills! #PowerShell #TechLearning`;
+            const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent('https://example.com/powershell101')}`;
+            window.open(twitterUrl, '_blank');
         }
 
         document.querySelectorAll('.modal .close').forEach(closeBtn => {
